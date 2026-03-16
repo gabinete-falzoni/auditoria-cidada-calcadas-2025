@@ -1,0 +1,27 @@
+---
+  title: "Report"
+output: pdf_document
+params:
+  title: NA
+description: NA
+reference: NA
+image_path: NA
+map: NA
+---
+
+  # Title: `r params$title`
+
+  ## Description: `r params$description`
+
+  ## Reference: `r params$reference`
+
+  ![Image](`r params$image_path`)
+
+```{r, echo=FALSE, fig.show='hold'}
+library(ggmap)
+library(grid)
+
+# Plot the map
+ggmap(params$map) +
+  geom_point(aes(x = `r st_coordinates(params$map)[1]`, y = `r st_coordinates(params$map)[2]`), color = 'red', size = 4) +
+  ggtitle("Location on Map")

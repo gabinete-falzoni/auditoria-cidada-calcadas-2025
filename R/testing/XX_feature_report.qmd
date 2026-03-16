@@ -1,0 +1,77 @@
+---
+title: ""
+format: pdf
+execute:
+  echo: false
+params:
+  title:
+    value: ""
+  text_blocks:
+    value: []
+  imagepath:
+    value: ""
+  # lon:
+  #   value: NA
+  # lat:
+  #   value: NA
+---
+
+```{r setup}
+#| include: false
+# library(sf)
+# library(mapview)
+# library(webshot2)
+# library(ggplot2)
+# library(grid)
+# library(ggspatial)
+```
+
+
+
+```{r print_text, results='asis', echo=FALSE}
+cat("# ", params$title, "\n\n")
+for (block in params$text_blocks) {
+  cat(block, "\n\n")
+}
+
+if (file.exists(params$imagepath)) {
+  # Copy image into local render directory
+  img_local <- file.path("01_image_sequences", basename(params$imagepath))
+  file.copy(params$imagepath, img_local, overwrite = TRUE)
+  knitr::include_graphics(img_local)
+} else {
+  cat("Image not found:", params$imagepath)
+}
+```
+
+
+
+```
+
+<!-- ```{r map, fig.cap="Map of point"} -->
+<!-- pt <- sf::st_sfc( -->
+<!--   sf::st_point(c(params$lon, params$lat)), -->
+<!--   crs = 4326 -->
+<!-- ) -->
+
+<!-- ggplot() + -->
+<!--   annotation_map_tile(type = "osm", zoom = 16) + -->
+<!--   geom_sf(data = pt, color = "red", size = 3) + -->
+<!--   theme_void() -->
+<!-- ``` -->
+
+
+
+
+<!-- ```{r map, fig.cap="Map of point", echo=FALSE} -->
+<!-- pt <- sf::st_sfc(sf::st_point(c(params$lon, params$lat)), crs = 4326) -->
+<!-- # Buffer the point to create a small bounding box -->
+<!-- bbox <- sf::st_buffer(pt, dist = 0.005) # ~100m buffer; adjust as needed -->
+
+<!-- ggplot() + -->
+<!--   annotation_map_tile(type = "osm", zoom = 20) + -->
+<!--   geom_sf(data = bbox, fill = NA, color = NA) + -->
+<!--   geom_sf(data = pt, color = "red", size = 3) + -->
+<!--   theme_void() -->
+<!-- ``` -->
+

@@ -1,0 +1,125 @@
+---
+title: ""
+format: pdf
+output:
+  pdf_document:
+    fig_caption: true  # Enable figure captions
+execute:
+  echo: false
+header-includes:
+  - \usepackage[top=0.5in, bottom=1in, left=1in, right=1in]{geometry}
+params:
+  title:
+    value: ""
+  text_blocks:
+    value: []
+  imagepath_0:
+    value: ""
+  imagepath_1:
+    value: ""
+  imagepath_2:
+    value: ""
+  imagepath_3:
+    value: ""
+  # lon:
+  #   value: NA
+  # lat:
+  #   value: NA
+---
+
+```{r setup}
+#| include: false
+# library(sf)
+# library(mapview)
+# library(webshot2)
+# library(ggplot2)
+# library(grid)
+# library(ggspatial)
+```
+
+
+
+```{r print_text, results='asis', echo=FALSE}
+
+pasta_pub_img <- sprintf('%s/imgs', getwd())
+dir.create(pasta_pub_img, recursive = TRUE, showWarnings = FALSE)
+
+cat("\\centering\n")  # This centers the content below
+cat("# ", params$title, "\n\n")
+for (block in params$text_blocks) {
+  cat(block, "\n\n")
+}
+```
+
+```{r first_image, out.width="100%", fig.margin=FALSE}
+
+if ('imagepath_0' %in% names(params) && file.exists(params$imagepath_0)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  img_local_0 <- file.path(pasta_pub_img, basename(params$imagepath_0))
+  if (!file.exists(img_local_0)) {
+    file.copy(params$imagepath_0, img_local_0, overwrite = TRUE)  
+  }
+  
+  # warning('Hara 0')
+  # cat("\\vspace{0.1cm}\n")  # You can adjust '1cm' to whatever space is needed
+  # knitr::asis_output("\\vspace{-1cm}")  # Reduces space between the images
+  knitr::include_graphics(img_local_0)
+} else {
+  cat("Image not found:", params$imagepath_0)
+}
+
+```
+
+```{r second_image, out.width="100%", fig.margin=FALSE}
+# Inserir segunda imagem, se coluna imagepath_1 existir no dataframe
+if ('imagepath_1' %in% names(params) && file.exists(params$imagepath_1)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  # warning('Hara 1')
+  img_local_1 <- file.path(pasta_pub_img, basename(params$imagepath_1))
+  if (!file.exists(img_local_1)) {
+    file.copy(params$imagepath_1, img_local_1, overwrite = TRUE)
+  }
+  
+  knitr::include_graphics(img_local_1)  # Display the second image
+} else {
+  # cat("Image not found:", params$imagepath_1, "\n")
+  cat("\n")
+  # warning('Haro 2')
+}
+```
+
+```{r third_image, out.width="100%", fig.margin=FALSE}
+# Inserir terceira imagem, se coluna imagepath_2 existir no dataframe
+if ('imagepath_2' %in% names(params) && file.exists(params$imagepath_2)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  # warning('Hara 1')
+  img_local_2 <- file.path(pasta_pub_img, basename(params$imagepath_2))
+  if (!file.exists(img_local_2)) {
+    file.copy(params$imagepath_2, img_local_2, overwrite = TRUE)
+  }
+  
+  knitr::include_graphics(img_local_2)  # Display the second image
+} else {
+  # cat("Image not found:", params$imagepath_2, "\n")
+  cat("\n")
+  # warning('Haro 2')
+}
+```
+
+```{r fourth_image, out.width="100%", fig.margin=FALSE}
+# Inserir quarta imagem, se coluna imagepath_3 existir no dataframe
+if ('imagepath_3' %in% names(params) && file.exists(params$imagepath_3)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  # warning('Hara 1')
+  img_local_3 <- file.path(pasta_pub_img, basename(params$imagepath_3))
+  if (!file.exists(img_local_3)) {
+    file.copy(params$imagepath_3, img_local_3, overwrite = TRUE)
+  }
+  
+  knitr::include_graphics(img_local_3)  # Display the second image
+} else {
+  # cat("Image not found:", params$imagepath_3, "\n")
+  cat("\n")
+  # warning('Haro 2')
+}
+```

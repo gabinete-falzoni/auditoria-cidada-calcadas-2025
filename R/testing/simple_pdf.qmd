@@ -1,0 +1,5 @@
+---
+title: "Simple Test"
+format: pdf
+---
+This is a simple test document.

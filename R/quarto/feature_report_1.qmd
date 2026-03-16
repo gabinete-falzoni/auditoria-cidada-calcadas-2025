@@ -1,0 +1,93 @@
+---
+title: ""
+format: pdf
+output:
+  pdf_document:
+    fig_caption: true  # Enable figure captions
+execute:
+  echo: false
+header-includes:
+  - \usepackage[top=0.5in, bottom=1in, left=1in, right=1in]{geometry}
+params:
+  title:
+    value: ""
+  text_blocks:
+    value: []
+  imagepath:
+    value: ""
+  imagepath2:
+    value: ""
+  # lon:
+  #   value: NA
+  # lat:
+  #   value: NA
+---
+
+```{r setup}
+#| include: false
+# library(sf)
+# library(mapview)
+# library(webshot2)
+# library(ggplot2)
+# library(grid)
+# library(ggspatial)
+```
+
+
+
+```{r print_text, results='asis', echo=FALSE}
+
+pasta_pub_img <- sprintf('%s/imgs', getwd())
+dir.create(pasta_pub_img, recursive = TRUE, showWarnings = FALSE)
+
+cat("# ", params$title, "\n\n")
+# cat("\\centering\n")  # This centers the content below
+cat("\n\n")
+for (block in params$text_blocks) {
+  cat(block, "\n\n")
+}
+```
+
+```{r first_image, out.width="100%", fig.align="center", fig.margin=FALSE}
+
+if (file.exists(params$imagepath)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  img_local <- file.path(pasta_pub_img, basename(params$imagepath))
+  if (!file.exists(img_local)) {
+    file.copy(params$imagepath, img_local, overwrite = TRUE)
+  }
+  
+  
+  # warning('Hara 0')
+  # cat("\\vspace{0.1cm}\n")  # You can adjust '1cm' to whatever space is needed
+  knitr::asis_output("\\vspace{-1cm}")  # Reduces space between the images
+  knitr::include_graphics(img_local)
+} else {
+  cat("Image not found:", params$imagepath)
+}
+# # Add some vertical space (adjust the length as needed)
+# cat("\\vspace{0.1cm}\n")  # You can adjust '1cm' to whatever space is needed
+# knitr::include_graphics(params$imagepath)
+```
+
+
+```{r second_image, out.width="100%", fig.align="center", fig.margin=FALSE}
+
+# Inserir segunda imagem, se coluna imagepath2 existir no dataframe
+if ('imagepath2' %in% names(params) && file.exists(params$imagepath2)) {
+  # Copiar imagens para pasta temporária (para rodar quarto)
+  # warning('Hara 1')
+  img_local2 <- file.path(pasta_pub_img, basename(params$imagepath2))
+  if (!file.exists(img_local2)) {
+    file.copy(params$imagepath2, img_local2, overwrite = TRUE)
+  }
+  
+  knitr::asis_output("\\vspace{-1cm}")  # Reduces space between the images
+  knitr::asis_output("\\vskip -1cm")  # More direct control over vertical space
+  knitr::include_graphics(img_local2)  # Display the second image
+} else {
+  # cat("Image not found:", params$imagepath2, "\n")
+  cat("\n")
+  # warning('Haro 2')
+}
+```
