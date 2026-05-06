@@ -1,5 +1,7 @@
 # Exporta PDFs dos problemas encontrados na auditoria, tendo a flag de problemas
 # de superfície e/ou buracos (análise manual) como base
+# O script está pensado para ser rodado após as imagens serem publicadas no
+# Mapillary e depois baixadas, para que o link de navegação remeta à plataforma
 
 # Se quarto gerar somente arquivos HTML em vez de PDF, ver:
 # https://stackoverflow.com/questions/75899982/quarto-in-rstudio-unable-to-render-document-as-pdf
@@ -16,8 +18,8 @@ library('readxl')
 
 
 # Estrutura de pastas
-# pasta_base  <- '/mnt/fern/Dados/2025_Auditoria_Calcadas/pinheiros'
-pasta_base  <- '/media/livre/Expansion/projetos/2025_Auditoria_Calcadas'
+# pasta_base  <- '/media/livre/Expansion/projetos/2025_Auditoria_Calcadas'
+pasta_base  <- '/mnt/fern/Dados/projetos/2025_Auditoria_Calcadas'
 pasta_proc  <- sprintf('%s/01_dados_processados', pasta_base)
 pasta_analises <- sprintf('%s/05_resultados', pasta_proc)
 pasta_publi    <- sprintf('%s/06_publicacao', pasta_proc)
@@ -34,6 +36,11 @@ dir.create(pasta_l_priv_buracos, recursive = TRUE, showWarnings = FALSE)
 # Resultados da auditoria, filtrados por keyframe
 dados <- sprintf('%s/auditoria_calcadas_bras.gpkg', pasta_analises)
 dados <- read_sf(dados)
+
+# Shape de fotos baixadas do Mapillary, após a publicação - esse shape vai ter
+# o ID da foto no Mapillary, necessário para construir o link de visualização
+fotos_mapillary <- file.path(pasta_publi, 'shapes_base/fotos_auditoria.gpkg')
+fotos_mapillary <- read_sf(fotos_mapillary) %>% select(id)
 
 # Pedido de LAI à SMSUB - Atualizão dos lotes marcacos como readeqaudos no PEC
 # Calçadas -- nenhuma está no perímetro de interesse
@@ -61,7 +68,8 @@ quadras <- dados %>%
                           TRUE ~ ''),
          .after = 'numero') %>%
   mutate(
-    imagepath = str_c('/media/livre/Expansion/projetos/2025_Auditoria_Calcadas/01_dados_processados/', imagepath)
+    # imagepath = str_c('/media/livre/Expansion/projetos/2025_Auditoria_Calcadas/01_dados_processados/', imagepath)
+    imagepath = str_c('/mnt/fern/Dados/projetos/2025_Auditoria_Calcadas/01_dados_processados/', imagepath)
   ) %>%
   arrange(kf_group_id)
 
@@ -98,9 +106,14 @@ quadras <- quadras %>%
          )
 
 
+# Puxar ID da foto no Mapillary, a partir do latlon
+quadras <- quadras %>% st_join(fotos_mapillary) %>% relocate(id, .before = 'kf_group_id')
+# Somente em três fotos não pegou o id
+# quadras %>% filter(!is.na(id))
+
 
 for (i in seq_len(nrow(quadras))) {
-  # row <- quadras[1, ]
+  # i <- 1; row <- quadras[i, ]
   row <- quadras[i, ]
 
   # # Criar segunda imagem, alguns segundos para a frente
@@ -129,13 +142,27 @@ for (i in seq_len(nrow(quadras))) {
         paste0("**Logradouro:** ", str_trim(str_squish(row$logradouro)), ", ", row$lado, ", Altura N° ", as.integer(row$numero)),
         paste0("**LAT:** ", str_sub(st_coordinates(row$geom)[, 2], 1, 9), ", **LON:** ", str_sub(st_coordinates(row$geom)[, 1], 1, 9)),
         paste0("**Links:**
-        [Localização no Google Maps](https://www.google.com/maps?q=",
-               st_coordinates(row$geom)[, 2], ",",
+        [Localização no Mapa](https://www.mapillary.com/app/user?lat=",
+               st_coordinates(row$geom)[, 2],
+               "&lng=",
                st_coordinates(row$geom)[, 1],
-               ") |  [Ver no Google Street View](http://maps.google.com/?cbll=",
-               st_coordinates(row$geom)[, 2], ",",
+               "&z=18&menu=false&dateFrom=2025-11-08&dateTo=2025-11-17&username%5B%5D=gabinete_falzoni&&pKey=",
+               row$id,
+               ") |  [Ver no Street View - Mapillary](https://www.mapillary.com/app/user/gabinete_falzoni?lat=",
+               st_coordinates(row$geom)[, 2],
+               "&lng=",
                st_coordinates(row$geom)[, 1],
-               "&cbp=12,20.09,,0,5&layer=c)"),
+               "&z=18&menu=false&dateFrom=2025-11-08&dateTo=2025-11-17&username%5B%5D=gabinete_falzoni&pKey=",
+               row$id,
+               "&focus=photo)"),
+        # paste0("**Links:**
+        # [Localização no Google Maps](https://www.google.com/maps?q=",
+        #        st_coordinates(row$geom)[, 2], ",",
+        #        st_coordinates(row$geom)[, 1],
+        #        ") |  [Ver no Google Street View](http://maps.google.com/?cbll=",
+        #        st_coordinates(row$geom)[, 2], ",",
+        #        st_coordinates(row$geom)[, 1],
+        #        "&cbp=12,20.09,,0,5&layer=c)"),
         paste0(" ")
       ),
       imagepath = row$imagepath
@@ -248,6 +275,8 @@ travessias <- travessias %>%
          trav_reparar_pavim  = ifelse(trav_reparar_pavim, 'SIM', 'NÃO'),
            )
 
+
+
 for (i in seq_len(nrow(travessias))) {
   # row <- travessias[1, ]
   row <- travessias[i, ]
@@ -299,13 +328,27 @@ for (i in seq_len(nrow(travessias))) {
         paste0("**Repintar faixa de pedestres?** ", row$trav_repintar_horiz, " | **Reparar pavimento?** ", row$trav_reparar_pavim),
         paste0("\n\n"),
         paste0("**Links:**
-        [Localização no Google Maps](https://www.google.com/maps?q=",
-               st_coordinates(row$geom)[, 2], ",",
+        [Localização no Mapa](https://www.mapillary.com/app/user?lat=",
+               st_coordinates(row$geom)[, 2],
+               "&lng=",
                st_coordinates(row$geom)[, 1],
-               ") |  [Ver no Google Street View](http://maps.google.com/?cbll=",
-               st_coordinates(row$geom)[, 2], ",",
+               "&z=18&menu=false&dateFrom=2025-11-08&dateTo=2025-11-17&username%5B%5D=gabinete_falzoni&&pKey=",
+               row$id,
+               ") |  [Ver no Street View - Mapillary](https://www.mapillary.com/app/user/gabinete_falzoni?lat=",
+               st_coordinates(row$geom)[, 2],
+               "&lng=",
                st_coordinates(row$geom)[, 1],
-               "&cbp=12,20.09,,0,5&layer=c)"),
+               "&z=18&menu=false&dateFrom=2025-11-08&dateTo=2025-11-17&username%5B%5D=gabinete_falzoni&pKey=",
+               row$id,
+               "&focus=photo)"),
+        # paste0("**Links:**
+        # [Localização no Google Maps](https://www.google.com/maps?q=",
+        #        st_coordinates(row$geom)[, 2], ",",
+        #        st_coordinates(row$geom)[, 1],
+        #        ") |  [Ver no Google Street View](http://maps.google.com/?cbll=",
+        #        st_coordinates(row$geom)[, 2], ",",
+        #        st_coordinates(row$geom)[, 1],
+        #        "&cbp=12,20.09,,0,5&layer=c)"),
         paste0(" ")
       ),
       imagepath_0 = row$imagepath_0,
